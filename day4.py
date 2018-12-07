@@ -1035,11 +1035,6 @@ for line in lines:
 from functools import reduce
 import operator
 
-# unions = {k:reduce((lambda x, y: set(x).union(y)), s, set()) for (k,s) in schedules.items()}
-
-# max_value = max(unions.values(), key=lambda x: len(x))
-# max_keys = [k for k, v in unions.items() if v == max_value]
-
 totals = {k:reduce((lambda x, y: x + len(list(y))), s, 0) for (k,s) in schedules.items()}
 max_key = max(totals.items(), key=operator.itemgetter(1))[0]
 
