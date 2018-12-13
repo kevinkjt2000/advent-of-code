@@ -1,5 +1,4 @@
-initial_state = """
-                          /------------------------------\\                                           /----------\\
+initial_state = """                          /------------------------------\\                                           /----------\\
                           |             /----------------+----------------------------------------\\  |          |
                           |             |                |                                    /---+--+----------+-------------------------------\\
                           |             |        /-------+------------------------------------+---+--+----------+-----------------------------\\ |
@@ -148,18 +147,19 @@ initial_state = """
          |                |        |   |    ||       | |      |\\----------+--------------------------------------------------------------+---+-------/
          |                \\--------/   |    |\\-------+-+------/           |                                                              |   |
          |                             |    |        | \\------------------+--------------------------------------------------------------/   |
-         \\-----------------------------/    \\--------/                    \\------------------------------------------------------------------/
-""".strip().split("\n")
+         \\-----------------------------/    \\--------/                    \\------------------------------------------------------------------/""".split("\n")
 
 initial_state2 = """
-/->-\\
-|   |  /----\\
-| /-+--+-\\  |
-| | |  | v  |
-\\-+-/  \\-+--/
-  \\------/
+/>-<\\
+|   |
+| /<+-\\
+| | | v
+\\>+</ |
+  |   ^
+  \\<->/
 """.strip().split("\n")
 
+state = initial_state
 DIRECTIONS = "<^>v"
 
 from enum import Enum
@@ -179,7 +179,6 @@ class Car(object):
     def __repr__(self):
         return f"({self.y},{self.x} {self.dir})"
 
-state = initial_state
 cars = []
 for (y, row) in enumerate(state):
     for (x, c) in enumerate(row):
@@ -187,7 +186,6 @@ for (y, row) in enumerate(state):
             cars.append(Car(y, x, underneath="-", dir=c))
         elif c in "^v":
             cars.append(Car(y, x, underneath="|", dir=c))
-print(cars)
 
 def move_car(car):
     dx = 0
@@ -205,49 +203,66 @@ def move_car(car):
     next_spot = state[car.y + dy][car.x + dx]
     next_choice = car.choice
     if next_spot in DIRECTIONS:
-        print(f"{car.x+dx},{car.y+dy}")
-        import sys
-        sys.exit(0)
-    elif next_spot == "+":
-        if car.choice == TurnDir.LEFT:
-            next_dir = DIRECTIONS[abs((DIRECTIONS.index(car.dir) - 1) % len(DIRECTIONS))]
-        elif car.choice == TurnDir.RIGHT:
-            next_dir = DIRECTIONS[(DIRECTIONS.index(car.dir) + 1) % len(DIRECTIONS)]
-        next_choice = TurnDir((car.choice.value + 1) % 3)
-    elif next_spot == "\\":
-        if car.dir == ">":
-            next_dir = "v"
-        elif car.dir == "^":
-            next_dir = "<"
-        elif car.dir == "v":
-            next_dir = ">"
-        elif car.dir == "<":
-            next_dir = "^"
-    elif next_spot == "/":
-        if car.dir == ">":
-            next_dir = "^"
-        elif car.dir == "^":
-            next_dir = ">"
-        elif car.dir == "v":
-            next_dir = "<"
-        elif car.dir == "<":
-            next_dir = "v"
+        other_car = None
+        for (i, c) in enumerate(cars):
+            if c and car and c.x == car.x + dx and c.y == car.y + dy:
+                other_car = i
+                state[c.y] = state[c.y][:c.x] + c.underneath + state[c.y][c.x+1:]
+                break
+        assert other_car != None
+        state[car.y] = state[car.y][:car.x] + car.underneath + state[car.y][car.x+1:]
+        return (cars.index(car), other_car)
+    else:
+        if next_spot == "+":
+            if car.choice == TurnDir.LEFT:
+                next_dir = DIRECTIONS[abs((DIRECTIONS.index(car.dir) - 1) % len(DIRECTIONS))]
+            elif car.choice == TurnDir.RIGHT:
+                next_dir = DIRECTIONS[(DIRECTIONS.index(car.dir) + 1) % len(DIRECTIONS)]
+            next_choice = TurnDir((car.choice.value + 1) % 3)
+        elif next_spot == "\\":
+            if car.dir == ">":
+                next_dir = "v"
+            elif car.dir == "^":
+                next_dir = "<"
+            elif car.dir == "v":
+                next_dir = ">"
+            elif car.dir == "<":
+                next_dir = "^"
+        elif next_spot == "/":
+            if car.dir == ">":
+                next_dir = "^"
+            elif car.dir == "^":
+                next_dir = ">"
+            elif car.dir == "v":
+                next_dir = "<"
+            elif car.dir == "<":
+                next_dir = "v"
 
-    state[car.y] = state[car.y][:car.x] + car.underneath + state[car.y][car.x+1:]
-    state[car.y+dy] = state[car.y+dy][:car.x+dx] + next_dir + state[car.y+dy][car.x+dx+1:]
-    return Car(car.y + dy, car.x + dx, dir=next_dir, underneath=next_spot, choice=next_choice)
+        state[car.y] = state[car.y][:car.x] + car.underneath + state[car.y][car.x+1:]
+        state[car.y+dy] = state[car.y+dy][:car.x+dx] + next_dir + state[car.y+dy][car.x+dx+1:]
+        return Car(car.y + dy, car.x + dx, dir=next_dir, underneath=next_spot, choice=next_choice)
+
 
 def sort_cars(cars):
     return sorted(cars, key=lambda car: (car.y, car.x))
 
 tick = 0
-while True:  # while no crash
+while len(cars) > 1:
     cars = sort_cars(cars)
-    print(cars)
     # print(tick)
+    # print(cars)
     # for line in state:
     #     print(line)
     for (i, car) in enumerate(cars):
-        cars[i] = move_car(car)
+        if car:
+            new_car = move_car(car)
+            if type(new_car) == Car:
+                cars[i] = new_car
+            else:
+                cars[new_car[0]] = None
+                cars[new_car[1]] = None
+    cars = [car for car in cars if car]
     tick += 1
 
+assert len(cars) == 1
+print(f"{cars[0].x},{cars[0].y}")
