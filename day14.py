@@ -4,7 +4,6 @@ goal_regex = re.compile(goal)
 goal_length = len(goal)
 
 state = "37"
-recipes = 2
 elves = list(range(0, 2))
 start_search_at = 0 - goal_length
 while True:
