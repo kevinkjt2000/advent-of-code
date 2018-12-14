@@ -1,20 +1,20 @@
-last = 894501
+import re
+goal = "894501"
+goal_regex = re.compile(goal)
+goal_length = len(goal)
 
-state = [3, 7]
+state = "37"
 recipes = 2
 elves = list(range(0, 2))
+start_search_at = 0 - goal_length
 while True:
-    state_sum = [int(digit) for digit in
-                 str(sum([state[elf] for elf in elves]))]
-    for num in state_sum:
-        state.append(num)
+    state_sum = str(sum([int(state[elf]) for elf in elves]))
+    state += state_sum
     for (e, elf) in enumerate(elves):
-        elves[e] = (1 + elf + state[elf]) % len(state)
-    try:
-        number = "".join([str(digit) for digit in state]).index(str(last))
-        print(number)
-        break
-    except ValueError:
-        pass
+        elves[e] = (1 + elf + int(state[elf])) % len(state)
 
-# print(elves, state[-10:])
+    match = goal_regex.search(state, start_search_at)
+    if match:
+        print(match.start())
+        break
+    start_search_at = len(state) - goal_length
