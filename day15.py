@@ -141,8 +141,8 @@ while len(goblins) > 0 and len(elves) > 0:
                     move_entity_towards_chosen(world, entity, chosen[1], chosen[2])
             else:
                 # attack!
-                chosen = sorted(nearest, key=lambda p: (p[3].hp, p[1], p[2]))[0]
-                chosen[3].hp -= entity.attack_power
+                fewest_hp = sorted(nearest, key=lambda p: (p[3].hp, p[1], p[2]))[0]
+                fewest_hp[3].hp -= entity.attack_power
 
         # cleanup the dead bodies before the next turn
         for e in elves:
