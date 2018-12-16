@@ -6,6 +6,12 @@ samples = samples.split("\n\n")
 
 class Computer(object):
     NUM_REGISTERS = 4
+    INSTRUCTIONS = [
+        'addi', 'addr', 'andi', 'andr',
+        'bori', 'borr', 'eqir', 'eqri',
+        'eqrr', 'gtir', 'gtri', 'gtrr',
+        'muli', 'mulr', 'seti', 'setr'
+    ]
 
     def __init__(self, starting_values=[0] * NUM_REGISTERS):
         self.registers = starting_values
@@ -80,34 +86,19 @@ class Computer(object):
         return f"{self.registers}"
 
 
-instructions = [
-    'addi', 'addr', 'andi', 'andr',
-    'bori', 'borr', 'eqir', 'eqri',
-    'eqrr', 'gtir', 'gtri', 'gtrr',
-    'muli', 'mulr', 'seti', 'setr'
-]
 from copy import deepcopy
 mappings = {}
-mappings2 = {}
 for (sample_id, s) in enumerate(samples):
     before, during, after = s.split("\n")
     starting_values = eval(before.split(": ")[1])
     op_code, a, b, c = [int(x) for x in during.split(" ")]
     expected_values = eval(after.split(": ")[1])
-    for i in instructions:
+    for i in Computer.INSTRUCTIONS:
         machine = Computer(deepcopy(starting_values))
         machine.__getattribute__(i)(a, b, c)
         if machine.registers == expected_values:
-            if sample_id not in mappings2:
-                mappings2[sample_id] = {}
-            if i not in mappings2[sample_id]:
-                mappings2[sample_id][i] = 0
-            mappings2[sample_id][i] += 1
-            if i not in mappings:
-                mappings[i] = []
-            mappings[i].append(sample_id)
+            if sample_id not in mappings:
+                mappings[sample_id] = []
+            mappings[sample_id].append(i)
 
-for m in mappings2:
-    print(m, mappings2[m])
-
-print(sum([1 for m in mappings2 if len(mappings2[m]) >= 3]))
+print(sum([1 for m in mappings if len(mappings[m]) >= 3]))
