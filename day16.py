@@ -1,6 +1,6 @@
 data = open("day16.input").read().strip()
 
-samples, program = data.split("\n\n\n")
+samples, program = data.split("\n\n\n\n")
 samples = samples.split("\n\n")
 
 
@@ -88,6 +88,7 @@ class Computer(object):
 
 from copy import deepcopy
 mappings = {}
+op_code_mappings = {}
 for (sample_id, s) in enumerate(samples):
     before, during, after = s.split("\n")
     starting_values = eval(before.split(": ")[1])
@@ -101,4 +102,29 @@ for (sample_id, s) in enumerate(samples):
                 mappings[sample_id] = []
             mappings[sample_id].append(i)
 
+            if op_code not in op_code_mappings:
+                op_code_mappings[op_code] = {i: 0 for i in Computer.INSTRUCTIONS}
+            op_code_mappings[op_code][i] += 1
+
 print(sum([1 for m in mappings if len(mappings[m]) >= 3]))
+
+real_mappings = {}
+while len(op_code_mappings) > 0:
+    for op_code in op_code_mappings:
+        non_zero_counts = [i for i in op_code_mappings[op_code]
+                           if op_code_mappings[op_code][i] > 0]
+        if len(non_zero_counts) == 1:
+            real_mappings[op_code] = non_zero_counts[0]
+            for m in op_code_mappings:
+                op_code_mappings[m].pop(non_zero_counts[0])
+            op_code_mappings.pop(op_code)
+            break
+
+real_machine = Computer()
+program_lines = program.split("\n")
+for line in program_lines:
+    op_code, a, b, c = [int(x) for x in line.split(" ")]
+    i = real_mappings[op_code]
+    real_machine.__getattribute__(i)(a, b, c)
+
+print(real_machine.registers[0])
