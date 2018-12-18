@@ -1,14 +1,14 @@
 data = open("day17.input").read().strip()
-# data = """
-# x=495, y=2..7
-# y=7, x=495..501
-# x=501, y=3..7
-# x=498, y=2..4
-# x=506, y=1..2
-# x=498, y=10..13
-# x=504, y=10..13
-# y=13, x=498..504
-# """.strip()
+data = """
+x=495, y=2..7
+y=7, x=495..501
+x=501, y=3..7
+x=498, y=2..4
+x=506, y=1..2
+x=498, y=10..13
+x=504, y=10..13
+y=13, x=498..504
+""".strip()
 
 lines = data.split("\n")
 
@@ -134,16 +134,15 @@ while True:  # while the water has not changed
                 q.put((qx+1, qy-1))
 
 
-    # for row in water_grid:
-    #     print("".join([repr(x) for x in row]))
-    # print("")
+    for row in water_grid:
+        print("".join([repr(x) for x in row]))
+    print("")
 
     # water_grid.pop(0)
     # for row in water_grid:
     #     for x in row:
     #         if x in [GridTile.WATER, GridTile.FLOWING]:
     #             num_water_tiles += 1
-    print(num_water_tiles)
 
     if not modified:
         break
@@ -152,3 +151,4 @@ while True:  # while the water has not changed
 for row in water_grid:
     print("".join([repr(x) for x in row]))
 print("")
+print(num_water_tiles)
