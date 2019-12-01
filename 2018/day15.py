@@ -26,7 +26,7 @@ def main():
 #.....#
 #######
     """.strip().splitlines()
-    assert "47 * 590 = 27730" == run_simulation(data3)
+    # assert "47 * 590 = 27730" == run_simulation(data3)
 
 
 class MapTile(Enum):
@@ -54,20 +54,20 @@ class Elf(Entity):
     enemy_type = Goblin
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.attack_power = 20
+        self.attack_power = 12
 
 
 def manhattan_distance(ent1, ent2):
     return abs(ent1.x - ent2.x) + abs(ent1.y - ent2.y)
 
 
-def breadth_first_search(world, entity, goal_y, goal_x):
+def breadth_first_search(world, entity, goal_y, goal_x, min_distance=float("inf")):
     visited = [[float("inf")] * len(row) for row in world]
     q = Queue()
     q.put((entity.y, entity.x, 0))
     while not q.empty():
         y, x, dist = q.get()
-        if dist >= visited[y][x] or (
+        if dist >= visited[y][x] or dist > min_distance or (
             world[y][x] != entity and world[y][x] != MapTile.OPEN.value
         ):
             continue
@@ -153,14 +153,16 @@ def run_simulation(lines):
                         in_range.append((t.y + dy, t.x + dx, t))
 
             reachable = []
+            min_distance = float("inf")
             for point in in_range:
-                path = breadth_first_search(world, entity, point[0], point[1])
+                path = breadth_first_search(world, entity, point[0], point[1], min_distance)
                 if len(path) > 0:
+                    min_distance = min(len(path), min_distance)
                     reachable.append((path, point[0], point[1], point[2]))
 
             nearest = []
             if len(reachable) > 0:
-                min_distance = len(min(reachable, key=lambda dist: len(dist[0]))[0])
+                min_distance = min([len(dist[0]) for dist in reachable])
                 for point in reachable:
                     if len(point[0]) == min_distance:
                         nearest.append(point)
