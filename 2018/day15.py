@@ -1,39 +1,12 @@
-data = """
-################################
-################.G#...##...#####
-#######..#######..#.G..##..#####
-#######....#####........##.#####
-######.....#####.....GG.##.#####
-######..GG.##.###G.........#####
-#####........G####.......#######
-######.#..G...####........######
-##########....#####...G...######
-########.......###..........####
-#########...GG####............##
-#########....................###
-######........#####...E......###
-####....G....#######........####
-###.........#########.......####
-#...#.G..G..#########..........#
-#..###..#...#########E.E....E###
-#..##...#...#########.E...E...##
-#.....G.....#########.........##
-#......G.G...#######........####
-###..G...#....#####........#####
-###########....G........EE..####
-##########...................###
-##########...................###
-#######.............E....##E####
-#######................#########
-########.#.............#########
-#######..#####.#......##########
-######...#######...##.##########
-################..###.##########
-###############.......##########
-################################
-""".strip()
+from enum import Enum
+from queue import Queue
 
-data2 = """
+
+def main():
+    data1 = open("day15.input").read().strip().splitlines()
+    # run_simulation(data1)
+
+    data2 = """
 #########
 #G..G..G#
 #.......#
@@ -43,17 +16,27 @@ data2 = """
 #.......#
 #G..G..G#
 #########
-""".strip()
+    """.strip().splitlines()
+    # run_simulation(data2)
 
-lines = data2.split("\n")
+    data3 = """
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+    """.strip().splitlines()
+    run_simulation(data3)
 
-from enum import Enum
 
 class MapTile(Enum):
     WALL = "#"
     OPEN = "."
     GOBLIN = "G"
     ELF = "E"
+
 
 class Entity(object):
     def __init__(self, x, y):
@@ -62,60 +45,49 @@ class Entity(object):
         self.x = x
         self.y = y
 
-    # def __repr__(self):
-    #     return f"({self.hp})"
 
 class Goblin(Entity):
-    pass
+    @property
+    def enemy_type(self):
+        return Elf
+
 
 class Elf(Entity):
-    pass
+    enemy_type = Goblin
+
 
 def manhattan_distance(ent1, ent2):
     return abs(ent1.x - ent2.x) + abs(ent1.y - ent2.y)
 
-goblins = []
-elves = []
-world = []
-for (y, line) in enumerate(lines):
-    world.append([None] * len(line))
-    for (x, c) in enumerate(line):
-        if c == MapTile.GOBLIN.value:
-            world[y][x] = Goblin(x, y)
-            goblins.append(world[y][x])
-        elif c == MapTile.ELF.value:
-            world[y][x] = Elf(x, y)
-            elves.append(world[y][x])
-        else:
-            world[y][x] = c
 
 def breadth_first_search(world, entity, goal_y, goal_x):
-    from queue import Queue
-    visited = [[(-1, -1, 0)] * len(row) for row in world]
+    visited = [[-1] * len(row) for row in world]
     q = Queue()
-    q.put((entity.y, entity.x))
-    path = []
+    q.put((entity.y, entity.x, 0))
     while not q.empty():
-        y, x = q.get()
+        y, x, dist = q.get()
+        if visited[y][x] >= dist or world[y][x] == MapTile.WALL.value:
+            continue
+        visited[y][x] = dist
         if y == goal_y and x == goal_x:
-            py, px, _dist = visited[y][x]
-            path = [(y, x), (py, px)]
             break
 
         for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
-            dist = visited[y][x][2] + 1
-            if ((visited[y + dy][x + dx] == (-1, -1, 0) or dist < visited[y + dy][x + dx][2]) and
-                    world[y + dy][x + dx] == MapTile.OPEN.value):
-                q.put((y + dy, x + dx))
-                visited[y + dy][x + dx] = (y, x, dist)
+            q.put((y + dy, x + dx, dist+1))
 
-    if path == []:
+    if visited[y][x] == -1:
         return []
-    while path[-1] != (entity.y, entity.x):
-        y, x = path[-1]
-        ny, nx, _dist = visited[y][x]
-        path.append((ny, nx))
-    return path
+
+    path = []
+    y, x = goal_y, goal_x
+    while entity.y != y or entity.x != x:
+        for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
+            if visited[y][x] - 1 == visited[y+dy][x+dx]:
+                path.append((y,x))
+                y += dy
+                x += dx
+                break
+    return path[::-1]
 
 
 def print_world(world):
@@ -132,88 +104,113 @@ def print_world(world):
         print(" ", " ".join(healths))
     print("")
 
-round_counter = 0
-print_world(world)
-while len(goblins) > 0 and len(elves) > 0:
-    turn_order = sorted(elves + goblins, key=lambda e: (e.y, e.x))
-    for (i, entity) in enumerate(turn_order):
-        if entity.hp <= 0:
-            continue
-        if type(entity) == Goblin:
-            targets = elves
-        else:
-            targets = goblins
 
-        attack_range = [
-            world[entity.y+1][entity.x],
-            world[entity.y][entity.x-1],
-            world[entity.y][entity.x+1],
-            world[entity.y-1][entity.x],
-        ]
-        attack_range = [ar for ar in attack_range if type(ar) in [Goblin, Elf]]
-        if any([ar in targets for ar in attack_range]):
-            # attack!
-            fewest_hp = sorted(attack_range, key=lambda p: (p.hp, p.y, p.x))[0]
-            fewest_hp.hp -= entity.attack_power
-            # cleanup the dead bodies before the next turn
-            for e in elves:
-                if e.hp <= 0:
-                    world[e.y][e.x] = MapTile.OPEN.value
-            for g in goblins:
-                if g.hp <= 0:
-                    world[g.y][g.x] = MapTile.OPEN.value
-            elves = [e for e in elves if e.hp > 0]
-            goblins = [g for g in goblins if g.hp > 0]
-            continue
+def run_simulation(lines):
+    goblins = []
+    elves = []
+    world = []
+    for (y, line) in enumerate(lines):
+        world.append([None] * len(line))
+        for (x, c) in enumerate(line):
+            if c == MapTile.GOBLIN.value:
+                world[y][x] = Goblin(x, y)
+                goblins.append(world[y][x])
+            elif c == MapTile.ELF.value:
+                world[y][x] = Elf(x, y)
+                elves.append(world[y][x])
+            else:
+                world[y][x] = c
 
-        in_range = []
-        for t in targets:
-            if t.hp <= 0:
+    round_counter = 0
+    while len(goblins) > 0 and len(elves) > 0:
+        print("Round", round_counter)
+        turn_order = sorted(elves + goblins, key=lambda e: (e.y, e.x))
+        for (i, entity) in enumerate(turn_order):
+            print_world(world)
+            if type(entity) == Goblin:
+                targets = elves
+            else:
+                targets = goblins
+
+            attack_range = determine_attack_range(world, entity)
+            if any([ar in targets for ar in attack_range]):
+                # attack!
+                fewest_hp = sorted(attack_range, key=lambda p: (p.hp, p.y, p.x))[0]
+                fewest_hp.hp -= entity.attack_power
+                elves, goblins = cleanup_dead_bodies(elves, world, goblins)
                 continue
-            # Check up, left, right, down (in that order)
-            if world[t.y-1][t.x] == MapTile.OPEN.value:
-                in_range.append((t.y-1, t.x, t))
-            elif world[t.y][t.x-1] == MapTile.OPEN.value:
-                in_range.append((t.y, t.x-1, t))
-            elif world[t.y][t.x+1] == MapTile.OPEN.value:
-                in_range.append((t.y, t.x+1, t))
-            elif world[t.y+1][t.x] == MapTile.OPEN.value:
-                in_range.append((t.y+1, t.x, t))
 
-        reachable = []
-        for point in in_range:
-            path = breadth_first_search(world, entity, point[0], point[1])
-            if len(path) > 0:
-                reachable.append((path, point[0], point[1], point[2]))
+            in_range = []
+            for t in targets:
+                for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
+                    if world[t.y + dy][t.x + dx] == MapTile.OPEN.value:
+                        in_range.append((t.y + dy, t.x + dx, t))
+            import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
-        nearest = []
-        if len(reachable) > 0:
-            min_distance = len(min(reachable, key=lambda dist: len(dist[0]))[0])
-            for point in reachable:
-                if len(point[0]) == min_distance:
-                    nearest.append(point)
+            reachable = []
+            for point in in_range:
+                path = breadth_first_search(world, entity, point[0], point[1])
+                if len(path) > 0:
+                    reachable.append((path, point[0], point[1], point[2]))
 
-        print(type(entity), entity.y, entity.x)
-        if len(nearest) > 0 and min_distance > 1:
-            # make move
-            chosen = sorted(nearest, key=lambda p: (p[1], p[2]))[0]
-            if type(entity) == Elf:
-                print(nearest)
-            if chosen:
-                path = chosen[0]
-                old_y, old_x = entity.y, entity.x
-                new_y, new_x = path[-2][0], path[-2][1]
-                entity.y = new_y
-                entity.x = new_x
-                world[old_y][old_x] = MapTile.OPEN.value
-                world[new_y][new_x] = entity
+            nearest = []
+            if len(reachable) > 0:
+                min_distance = len(min(reachable, key=lambda dist: len(dist[0]))[0])
+                for point in reachable:
+                    if len(point[0]) == min_distance:
+                        nearest.append(point)
+
+            print(type(entity), entity.y, entity.x)
+            if len(nearest) > 0 and min_distance > 1:
+                # make move
+                chosen = sorted(nearest, key=lambda p: (p[1], p[2]))[0]
+                if type(entity) == Elf:
+                    print(nearest)
+                if chosen:
+                    path = chosen[0]
+                    old_y, old_x = entity.y, entity.x
+                    new_y, new_x = path[-2][0], path[-2][1]
+                    entity.y = new_y
+                    entity.x = new_x
+                    world[old_y][old_x] = MapTile.OPEN.value
+                    world[new_y][new_x] = entity
+
+            attack_range = determine_attack_range(world, entity)
+            if any([ar in targets for ar in attack_range]):
+                # attack!
+                fewest_hp = sorted(attack_range, key=lambda p: (p.hp, p.y, p.x))[0]
+                fewest_hp.hp -= entity.attack_power
+                elves, goblins = cleanup_dead_bodies(elves, world, goblins)
+
+        # all turns complete, time for the next round
+        round_counter += 1
 
     print_world(world)
-    import pdb; pdb.set_trace()  # XXX BREAKPOINT
+    hp_remaining = sum([e.hp for e in elves]) + sum([g.hp for g in goblins])
+    outcome = round_counter * hp_remaining
+    print(f"{round_counter} * {hp_remaining} = {outcome}")
+    return outcome
 
-    # all turns complete, time for the next round
-    round_counter += 1
+def determine_attack_range(world, entity):
+    attack_range = [
+        world[entity.y + 1][entity.x],
+        world[entity.y][entity.x - 1],
+        world[entity.y][entity.x + 1],
+        world[entity.y - 1][entity.x],
+    ]
+    return [ar for ar in attack_range if type(ar) == entity.enemy_type]
 
-hp_remaining = sum([e.hp for e in elves]) + sum([g.hp for g in goblins])
-outcome = round_counter * hp_remaining
-print(outcome)
+def cleanup_dead_bodies(elves, world, goblins):
+    for e in elves:
+        if e.hp <= 0:
+            world[e.y][e.x] = MapTile.OPEN.value
+    for g in goblins:
+        if g.hp <= 0:
+            world[g.y][g.x] = MapTile.OPEN.value
+    elves = [e for e in elves if e.hp > 0]
+    goblins = [g for g in goblins if g.hp > 0]
+    return elves, goblins
+
+
+if __name__ == "__main__":
+    main()
