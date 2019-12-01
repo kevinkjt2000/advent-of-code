@@ -4,20 +4,18 @@ from queue import Queue
 
 def main():
     data1 = open("day15.input").read().strip().splitlines()
-    # run_simulation(data1)
+    print(run_simulation(data1))
 
     data2 = """
-#########
-#G..G..G#
-#.......#
-#.......#
-#G..E..G#
-#.......#
-#.......#
-#G..G..G#
-#########
+#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######
     """.strip().splitlines()
-    # run_simulation(data2)
+    # print(run_simulation(data2))
 
     data3 = """
 #######
@@ -28,7 +26,7 @@ def main():
 #.....#
 #######
     """.strip().splitlines()
-    run_simulation(data3)
+    assert "47 * 590 = 27730" == run_simulation(data3)
 
 
 class MapTile(Enum):
@@ -54,6 +52,9 @@ class Goblin(Entity):
 
 class Elf(Entity):
     enemy_type = Goblin
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.attack_power = 20
 
 
 def manhattan_distance(ent1, ent2):
@@ -61,29 +62,31 @@ def manhattan_distance(ent1, ent2):
 
 
 def breadth_first_search(world, entity, goal_y, goal_x):
-    visited = [[-1] * len(row) for row in world]
+    visited = [[float("inf")] * len(row) for row in world]
     q = Queue()
     q.put((entity.y, entity.x, 0))
     while not q.empty():
         y, x, dist = q.get()
-        if visited[y][x] >= dist or world[y][x] == MapTile.WALL.value:
+        if dist >= visited[y][x] or (
+            world[y][x] != entity and world[y][x] != MapTile.OPEN.value
+        ):
             continue
         visited[y][x] = dist
         if y == goal_y and x == goal_x:
             break
 
         for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
-            q.put((y + dy, x + dx, dist+1))
+            q.put((y + dy, x + dx, dist + 1))
 
-    if visited[y][x] == -1:
+    if visited[goal_y][goal_x] == float("inf"):
         return []
 
-    path = []
     y, x = goal_y, goal_x
+    path = []
     while entity.y != y or entity.x != x:
         for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
-            if visited[y][x] - 1 == visited[y+dy][x+dx]:
-                path.append((y,x))
+            if visited[y][x] - 1 == visited[y + dy][x + dx]:
+                path.append((y, x))
                 y += dy
                 x += dx
                 break
@@ -124,9 +127,12 @@ def run_simulation(lines):
     round_counter = 0
     while len(goblins) > 0 and len(elves) > 0:
         print("Round", round_counter)
+        print_world(world)
+
         turn_order = sorted(elves + goblins, key=lambda e: (e.y, e.x))
-        for (i, entity) in enumerate(turn_order):
-            print_world(world)
+        for entity in turn_order:
+            if entity.hp <= 0:
+                continue
             if type(entity) == Goblin:
                 targets = elves
             else:
@@ -145,7 +151,6 @@ def run_simulation(lines):
                 for (dy, dx) in [(-1, 0), (0, -1), (0, 1), (1, 0)]:
                     if world[t.y + dy][t.x + dx] == MapTile.OPEN.value:
                         in_range.append((t.y + dy, t.x + dx, t))
-            import pdb; pdb.set_trace()  # XXX BREAKPOINT
 
             reachable = []
             for point in in_range:
@@ -160,20 +165,16 @@ def run_simulation(lines):
                     if len(point[0]) == min_distance:
                         nearest.append(point)
 
-            print(type(entity), entity.y, entity.x)
-            if len(nearest) > 0 and min_distance > 1:
+            if len(nearest) > 0 and min_distance > 0:
                 # make move
                 chosen = sorted(nearest, key=lambda p: (p[1], p[2]))[0]
-                if type(entity) == Elf:
-                    print(nearest)
-                if chosen:
-                    path = chosen[0]
-                    old_y, old_x = entity.y, entity.x
-                    new_y, new_x = path[-2][0], path[-2][1]
-                    entity.y = new_y
-                    entity.x = new_x
-                    world[old_y][old_x] = MapTile.OPEN.value
-                    world[new_y][new_x] = entity
+                path = chosen[0]
+                old_y, old_x = entity.y, entity.x
+                new_y, new_x = path[0][0], path[0][1]
+                entity.y = new_y
+                entity.x = new_x
+                world[old_y][old_x] = MapTile.OPEN.value
+                world[new_y][new_x] = entity
 
             attack_range = determine_attack_range(world, entity)
             if any([ar in targets for ar in attack_range]):
@@ -188,8 +189,8 @@ def run_simulation(lines):
     print_world(world)
     hp_remaining = sum([e.hp for e in elves]) + sum([g.hp for g in goblins])
     outcome = round_counter * hp_remaining
-    print(f"{round_counter} * {hp_remaining} = {outcome}")
-    return outcome
+    return f"{round_counter} * {hp_remaining} = {outcome}"
+
 
 def determine_attack_range(world, entity):
     attack_range = [
@@ -199,6 +200,7 @@ def determine_attack_range(world, entity):
         world[entity.y - 1][entity.x],
     ]
     return [ar for ar in attack_range if type(ar) == entity.enemy_type]
+
 
 def cleanup_dead_bodies(elves, world, goblins):
     for e in elves:
