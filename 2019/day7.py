@@ -7,10 +7,9 @@ def part_two(prog):
     phases = list(range(5, 10))
     max_thrust = float("-inf")
     for phase_perm in permutations(phases):
-        loopback_thrust = None
+        loopback_thrust = 0
         def amp_a_input():
             yield phase_perm[0]
-            yield 0
             while True:
                 yield loopback_thrust
         def amp_b_input():
