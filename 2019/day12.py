@@ -5,17 +5,19 @@ def solve(data):
     moons = list(map(parse_moon_position, data))
     moon_velocities = [[0, 0, 0] for i in range(len(moons))]
     already_encountered = set(str(moons) + str(moon_velocities))
-    pairs = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+    pairs = []
+    for i in range(len(moons)):
+        for j in range(len(moons)):
+            if i != j:
+                pairs.append((i, j))
     time_step = 0
     while True:
         for i, j in pairs:
             for xyz in range(3):
                 if moons[i][xyz] < moons[j][xyz]:
                     moon_velocities[i][xyz] += 1
-                    moon_velocities[j][xyz] -= 1
                 elif moons[i][xyz] > moons[j][xyz]:
                     moon_velocities[i][xyz] -= 1
-                    moon_velocities[j][xyz] += 1
         for i in range(len(moons)):
             for xyz in range(3):
                 moons[i][xyz] += moon_velocities[i][xyz]
