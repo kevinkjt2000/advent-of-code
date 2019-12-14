@@ -1,27 +1,31 @@
 def solve(reaction_strings):
     reactions = parse_input(reaction_strings)
     print(reactions)
-    stock = reactions["FUEL"][1]
-    modified = True
-    while len(stock) > 1 and modified:
-        print(stock)
-        modified = False
-        for s in stock:
-            if s == "ORE":
-                continue
-            if stock[s] > 0:
-                print("applying", s, reactions[s])
-                factor = stock[s] // reactions[s][0]
-                if factor == 0:
-                    factor += 1
-                    stock[s] -= reactions[s][0]
-                else:
-                    stock[s] %= reactions[s][0]
-                for s_ in reactions[s][1]:
-                    stock[s_] = stock.get(s_, 0) + factor*reactions[s][1][s_]
-                modified = True
-                break
-    print(stock)
+    stock = {"FUEL": 1, "ORE": 0}
+    fuel = 0
+    while stock.get("ORE", 0) < 1000000000000:
+        modified = True
+        while modified:
+            modified = False
+            for s in stock:
+                if s == "ORE":
+                    continue
+                if stock[s] > 0:
+                    # print("applying", s, reactions[s])
+                    factor = stock[s] // reactions[s][0]
+                    if factor == 0:
+                        factor += 1
+                        stock[s] -= reactions[s][0]
+                    else:
+                        stock[s] %= reactions[s][0]
+                    for s_ in reactions[s][1]:
+                        stock[s_] = stock.get(s_, 0) + factor*reactions[s][1][s_]
+                    modified = True
+                    break
+        fuel += 1
+        stock["FUEL"] = 1
+        # print(stock["ORE"])
+    print(fuel - 1)
 
 
 def parse_input(reaction_strings):
