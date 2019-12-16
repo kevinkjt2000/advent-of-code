@@ -31,32 +31,19 @@ def solve(data):
         dist = 0
         last_sc = None
         while len(please_visit) > 0:
-            print_maze(maze)
             if (y, x) in visited:
                 if (y+1, x) not in visited:
                     y += 1
-                    dist += 1
-                    print("north")
                     yield north
-                    last_sc = status_codes.get()
                 elif (y-1, x) not in visited:
                     y -= 1
-                    dist += 1
-                    print("south")
                     yield south
-                    last_sc = status_codes.get()
                 elif (y, x+1) not in visited:
                     x += 1
-                    dist += 1
-                    print("east")
                     yield east
-                    last_sc = status_codes.get()
                 elif (y, x-1) not in visited:
                     x -= 1
-                    dist += 1
-                    print("west")
                     yield west
-                    last_sc = status_codes.get()
                 else:
                     for movement in [north, south, west, east]:
                         dy, dx = get_dy_dx(movement)
@@ -64,14 +51,12 @@ def solve(data):
                             y += dy
                             x += dx
                             dist -= 1
-                            print(f"backtracking {movement}")
                             yield movement
                             last_sc = status_codes.get()
                             break
                     continue
-                for dy, dx in map(get_dy_dx, [north, south, west, east]):
-                    if (y+dy, x+dx) not in visited:
-                        please_visit.add((y+dy, x+dx))
+                dist += 1
+                last_sc = status_codes.get()
             visited[(y, x)] = dist
             please_visit.remove((y, x))
             if last_sc == sc_wall:
@@ -85,18 +70,21 @@ def solve(data):
                         break
             elif sc == sc_moved:
                 maze[(y, x)] = "."
+                for dy, dx in map(get_dy_dx, [north, south, west, east]):
+                    if (y+dy, x+dx) not in visited:
+                        please_visit.add((y+dy, x+dx))
             elif sc == sc_goal:
                 maze[(y, x)] = "G"
+                for dy, dx in map(get_dy_dx, [north, south, west, east]):
+                    if (y+dy, x+dx) not in visited:
+                        please_visit.add((y+dy, x+dx))
                 print(f"goal at {(y, x)}")
 
-    try:
-        outputs = run_program(map(int, data.split(",")), movement_commands)
-        for sc in outputs:
-            status_codes.put(sc)
-    finally:
-        print(visited)
-        maze[(0, 0)] = "S"
-        print_maze(maze)
+    outputs = run_program(map(int, data.split(",")), movement_commands)
+    for sc in outputs:
+        status_codes.put(sc)
+    maze[(0, 0)] = "S"
+    print_maze(maze)
 
 
 def print_maze(maze):
