@@ -38,8 +38,11 @@ def run_program(program, input_generator=default_input):
             set_param(pc+3, a * b, param_mode_c)
             pc += 4
         elif op == 3:
-            set_param(pc+1, int(next(input_gen)), param_mode_a)
-            pc += 2
+            try:
+                set_param(pc+1, int(next(input_gen)), param_mode_a)
+                pc += 2
+            except StopIteration:
+                break
         elif op == 4:
             a = get_param(pc+1, param_mode_a)
             print(a)
