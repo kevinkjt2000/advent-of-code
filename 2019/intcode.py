@@ -1,9 +1,9 @@
-def default_input():
+def default_int_input():
     while True:
-        yield input()
+        yield int(input())
 
 
-def run_program(program, input_generator=default_input):
+def run_program(program, input_generator=default_int_input):
     program = {i: v for i, v in enumerate(program)}
     input_gen = input_generator()
     relative_base = 0
@@ -39,7 +39,7 @@ def run_program(program, input_generator=default_input):
             pc += 4
         elif op == 3:
             try:
-                set_param(pc+1, int(next(input_gen)), param_mode_a)
+                set_param(pc+1, next(input_gen), param_mode_a)
                 pc += 2
             except StopIteration:
                 break
