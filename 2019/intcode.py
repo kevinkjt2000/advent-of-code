@@ -1,3 +1,10 @@
+def ascii_input():
+    while True:
+        for ch in input():
+            yield ord(ch)
+        yield ord("\n")
+
+
 def default_int_input():
     while True:
         yield int(input())
@@ -45,7 +52,6 @@ def run_program(program, input_generator=default_int_input):
                 break
         elif op == 4:
             a = get_param(pc+1, param_mode_a)
-            print(a)
             yield a
             pc += 2
         elif op == 5:
