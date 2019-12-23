@@ -8,16 +8,15 @@ def jumpscript_guess(jumpscript):
             for ch in line:
                 yield ord(ch)
             yield ord("\n")
-        yield ord("W")
-        yield ord("A")
-        yield ord("L")
-        yield ord("K")
+        yield ord("R")
+        yield ord("U")
+        yield ord("N")
         yield ord("\n")
     return f
 
 if __name__ == "__main__":
     instructions = ["NOT", "AND", "OR"]
-    xs = "ABCDJT"
+    xs = "ABCDEFGHIJT"
     ys = ["J", "T"]
     program = list(map(int, open("day21.input", "r").read().split(",")))
     for length in range(16):
