@@ -30,10 +30,8 @@ if __name__ == "__main__":
         def receive():
             print("booting", net_addr)
             yield net_addr
-            while True:
+            while not DIE.is_set():
                 if queues[net_addr].empty():
-                    if DIE.is_set():
-                        break
                     yield -1
                     sleep(0.01)
                 else:
