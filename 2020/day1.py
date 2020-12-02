@@ -19,20 +19,18 @@ def part2():
             numbers.append(num)
     n = len(numbers)
     numbers = sorted(numbers)
+    lookup_set = set(numbers)
+    minimum = numbers[0]
     for i in range(0, n-2):
         x = numbers[i]
         for j in range(i+1, n-1):
             y = numbers[j]
-            if x + y > 2020:
+            if x + y + minimum > 2020:
                 break
-            for k in range(j+1, n):
-                z = numbers[k]
-                total = x + y + z
-                if total == 2020:
-                    print(x * y * z)
-                    return
-                if total > 2020:
-                    break
+            z = 2020 - x - y
+            if z in lookup_set:
+                print(x * y * z)
+                return
 
 
 def main():
