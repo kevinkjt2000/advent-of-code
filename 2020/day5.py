@@ -12,11 +12,15 @@ def part1():
 
 
 def part2():
-    pass
+    values = sorted(list(generate_row_col_values()))
+    for i in range(0, len(values)-1):
+        if values[i] + 1 != values[i+1]:
+            print(values[i]+1)
+            break
 
 
 def main():
-    part1()
+    part2()
 
 
 if __name__ == "__main__":
