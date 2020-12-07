@@ -4,17 +4,22 @@ BEGIN {
   total = 0
 }
 {
-  for(i=1;i<=NF;i++){
-    split($i, chars, "")
-    for(j=1; j<=length($i); j++) {
-      if (chars[j] in a == 0){
-        a[chars[j]]
+  split("", a) # initializes empty array, since a = [] is invalid
+  split($1, chars, "")
+  for(i=1; i<=length(chars); i++) {
+    innocent = 1
+    for(j=2; j<=NF; j++) {
+      if (!($j ~ chars[i])) {
+        innocent = 0
       }
     }
-    delete chars
+    if (innocent) {
+      a[chars[i]]
+    }
   }
   total += length(a)
   delete a
+  delete chars
 }
 END {
   print total
