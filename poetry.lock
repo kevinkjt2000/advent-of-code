@@ -1,0 +1,18 @@
+[[package]]
+category = "main"
+description = "parser combinator."
+name = "parsec"
+optional = false
+python-versions = "*"
+version = "3.5"
+
+[metadata]
+content-hash = "36fce0142d508e31f4092df4b1f5a6b8265abb4034bb7150a37f1de8218001b2"
+lock-version = "1.0"
+python-versions = "^3.8"
+
+[metadata.files]
+parsec = [
+    {file = "parsec-3.5-py2.py3-none-any.whl", hash = "sha256:f2e82c380dba8ddeac3c3b8265f90f7729f88999411cc710be11cb9b2681a928"},
+    {file = "parsec-3.5.tar.gz", hash = "sha256:5e6961d05f332515c307e97292f53472054466fd0f915d965ed36a30690c768a"},
+]
