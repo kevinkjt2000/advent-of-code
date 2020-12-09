@@ -60,8 +60,11 @@ class Graph:
                 stack.append(neighbor)
         return total
 
+    def calculate_total_multiplicative_weight_reachable_from(self, start):
+        return 1 + sum(w * self.calculate_total_multiplicative_weight_reachable_from(v) for w, v in self.edges[start])
 
-def part1():
+
+def read_input():
     g = Graph()
     with open("./day7.input") as file_input:
         for line in file_input.readlines():
@@ -69,12 +72,22 @@ def part1():
             g.add_vertex(color)
             for amount, alt_color in contents:
                 g.add_edge(src=color, dest=alt_color, weight=amount)
+    return g
+
+
+def part1():
+    g = read_input()
     rg = Graph.create_with_reversed_edges(g)
     print(rg.count_nodes_reachable_from("shiny gold"))
 
 
+def part2():
+    g = read_input()
+    print(g.calculate_total_multiplicative_weight_reachable_from("shiny gold") - 1)
+
+
 def main():
-    part1()
+    part2()
 
 
 if __name__ == "__main__":
