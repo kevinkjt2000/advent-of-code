@@ -1,3 +1,4 @@
+from copy import deepcopy
 import parsec as p
 
 
@@ -23,7 +24,6 @@ class Machine():
         visited_addresses = set()
         while self.pc not in visited_addresses:
             visited_addresses.add(self.pc)
-            last_known_acc = self.acc
             instr, arg = self.prog[self.pc]
             if instr == "jmp":
                 self.pc += arg
@@ -32,4 +32,18 @@ class Machine():
                 self.pc += 1
             elif instr == "nop":
                 self.pc += 1
-        return last_known_acc
+        return self.acc
+
+    def check_for_single_instruction_corruption(self):
+        for i in range(len(self.prog)):
+            m = deepcopy(self)
+            instr, arg = m.prog[i]
+            if instr == "nop":
+                m.prog[i] = ("jmp", arg)
+            elif instr == "jmp":
+                m.prog[i] = ("nop", arg)
+            try:
+                acc = m.check_for_infinite()
+            except IndexError:
+                assert m.pc == len(m.prog)
+                return m.acc
