@@ -32,4 +32,32 @@ def part1():
     print(sum(row.count(OCCUPIED) for row in layout))
 
 
-part1()
+def part2():
+    layout = read_input()
+    next_layout = None
+    while layout != next_layout:
+        next_layout = deepcopy(layout)
+        for i in range(len(layout)):
+            for j in range(len(layout[0])):
+                if layout[i][j] == FLOOR:
+                    continue
+                neighbor_count = 0
+                for di, dj in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]:
+                    i_, j_ = i, j
+                    while i_ + di in range(len(layout)) and j_ + dj in range(len(layout[0])):
+                        if layout[i_+di][j_+dj] == OCCUPIED:
+                            neighbor_count += 1
+                            break
+                        if layout[i_+di][j_+dj] == EMPTY:
+                            break
+                        i_ += di
+                        j_ += dj
+                if layout[i][j] == EMPTY and neighbor_count == 0:
+                    next_layout[i][j] = OCCUPIED
+                elif layout[i][j] == OCCUPIED and neighbor_count >= 5:
+                    next_layout[i][j] = EMPTY
+        layout, next_layout = next_layout, layout
+    print(sum(row.count(OCCUPIED) for row in layout))
+
+
+part2()
