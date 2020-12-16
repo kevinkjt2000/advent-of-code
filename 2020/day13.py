@@ -1,6 +1,5 @@
 from functools import reduce
 from itertools import count, filterfalse, islice
-from tqdm import tqdm
 
 
 def find_smallest_multiple_of_k_greater_than_or_equal_to_n(n, k):
