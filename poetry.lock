@@ -6,8 +6,19 @@ optional = false
 python-versions = "*"
 version = "3.5"
 
+[[package]]
+category = "main"
+description = "Fast, Extensible Progress Meter"
+name = "tqdm"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+version = "4.54.1"
+
+[package.extras]
+dev = ["py-make (>=0.1.0)", "twine", "argopt", "pydoc-markdown", "wheel"]
+
 [metadata]
-content-hash = "36fce0142d508e31f4092df4b1f5a6b8265abb4034bb7150a37f1de8218001b2"
+content-hash = "9eedb023359ad840ff1c169dfcbc1ba1f6622e13903b6baa1f175ace1469c9c5"
 lock-version = "1.0"
 python-versions = "^3.8"
 
@@ -15,4 +26,8 @@ python-versions = "^3.8"
 parsec = [
     {file = "parsec-3.5-py2.py3-none-any.whl", hash = "sha256:f2e82c380dba8ddeac3c3b8265f90f7729f88999411cc710be11cb9b2681a928"},
     {file = "parsec-3.5.tar.gz", hash = "sha256:5e6961d05f332515c307e97292f53472054466fd0f915d965ed36a30690c768a"},
+]
+tqdm = [
+    {file = "tqdm-4.54.1-py2.py3-none-any.whl", hash = "sha256:d4f413aecb61c9779888c64ddf0c62910ad56dcbe857d8922bb505d4dbff0df1"},
+    {file = "tqdm-4.54.1.tar.gz", hash = "sha256:38b658a3e4ecf9b4f6f8ff75ca16221ae3378b2e175d846b6b33ea3a20852cf5"},
 ]
