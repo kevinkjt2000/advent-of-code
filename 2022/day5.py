@@ -28,11 +28,18 @@ def part1():
 
 
 def part2():
-    pass
+    stacks, instructions = parse_file()
+    for instruction in instructions:
+        count, source, dest = instruction
+        source -= 1
+        dest -= 1
+        stacks[dest] = stacks[source][0:count] + stacks[dest]
+        stacks[source] = stacks[source][count:]
+    print("".join(s[0] for s in stacks))
 
 
 def main():
-    part1()
+    part2()
 
 
 if __name__ == "__main__":
