@@ -4,6 +4,10 @@ from more_itertools import sliding_window
 import pytest
 
 
+TOTAL_DISK = 70000000
+UNUSED_NEEDED_FOR_UPDATE = 30000000
+
+
 class Disk:
     def __init__(self):
         self.disk = {}
@@ -48,10 +52,16 @@ class Disk:
                 size += self.du(entry)
         return size
 
-    def sum_greater_than_100k(self, _curdir=None):
+    def sum_greater_than_100k(self):
+        total = 0
+        for size in self.iter_folder_sizes():
+            if size <= 100_000:
+                total += size
+        return total
+
+    def iter_folder_sizes(self):
         old_curdir_chain = self.curdir_chain
         old_curdir = self.curdir
-        total = 0
 
         q = Queue()
         q.put(["/"])
@@ -59,15 +69,29 @@ class Disk:
             paths = q.get()
             for p in paths:
                 self.cd(p)
-            if (size := self.du()) <= 100_000:
-                total += size
+            yield self.du()
             for listing in self.ls():
                 if listing.startswith("dir "):
                     q.put(paths + [listing[4:]])
 
         self.curdir_chain = old_curdir_chain
         self.curdir = old_curdir
-        return total
+
+    def find_smallest_to_free_up_space(self):
+        old_curdir = self.curdir
+        self.curdir = self.disk
+        used_space = self.du()
+        self.curdir = old_curdir
+
+        sizes = self.iter_folder_sizes()
+        minimum_size = next(sizes)
+        for size in sizes:
+            if (
+                size < minimum_size
+                and UNUSED_NEEDED_FOR_UPDATE + used_space - size <= TOTAL_DISK
+            ):
+                minimum_size = size
+        return minimum_size
 
 
 def test_example_is_solved_correctly():
@@ -90,6 +114,7 @@ def test_example_is_solved_correctly():
     assert disk.du() == 48_381_165
 
     assert disk.sum_greater_than_100k() == 95437
+    assert disk.find_smallest_to_free_up_space() == 24933642
 
 
 class TestDisk:
@@ -172,11 +197,12 @@ def part1():
 
 
 def part2():
-    pass
+    disk = parse_file()
+    print(disk.find_smallest_to_free_up_space())
 
 
 def main():
-    part1()
+    part2()
 
 
 if __name__ == "__main__":
