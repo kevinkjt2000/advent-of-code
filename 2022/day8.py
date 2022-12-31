@@ -45,8 +45,33 @@ def part1():
     print(sum(row.count(True) for row in visible))
 
 
+def part2():
+    tree_grid = parse_file()
+    columns = len(tree_grid[0])
+    rows = len(tree_grid)
+    may_visibility_score = 0
+
+    for x in range(columns):
+        for y in range(rows):
+            tree_under_consideration = tree_grid[y][x]
+            visibility_score = 1
+            for dx, dy in [(0, 1), (1, 0), (-1, 0), (0, -1)]:
+                viewing_distance = 0
+                cx, cy = x + dx, y + dy
+                while cx in range(columns) and cy in range(rows):
+                    viewing_distance += 1
+                    if tree_grid[cy][cx] >= tree_under_consideration:
+                        break
+                    cx += dx
+                    cy += dy
+                visibility_score *= viewing_distance
+            may_visibility_score = max(visibility_score, may_visibility_score)
+
+    print(may_visibility_score)
+
+
 def main():
-    part1()
+    part2()
 
 
 if __name__ == "__main__":
