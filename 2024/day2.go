@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -18,6 +19,7 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	numSafeReports := 0
+	numSafeDampenedReports := 0
 	for scanner.Scan() {
 		line := scanner.Text()
 		inputs := strings.Split(line, " ")
@@ -30,13 +32,29 @@ func main() {
 			}
 			report = append(report, num)
 		}
-		isSafe := isSafeReport(report)
-		if isSafe {
+		if isSafeReport(report) {
 			numSafeReports += 1
+		}
+		if isSafeWithProblemDampnerReport(report) {
+			numSafeDampenedReports += 1
 		}
 	}
 
 	fmt.Printf("part1: %d\n", numSafeReports)
+	fmt.Printf("part2: %d\n", numSafeDampenedReports)
+}
+
+func isSafeWithProblemDampnerReport(report []int64) bool {
+	if isSafeReport(report) {
+		return true
+	}
+	for i := range report {
+		dampenedReport := slices.Delete(slices.Clone(report), i, i+1)
+		if isSafeReport(dampenedReport) {
+			return true
+		}
+	}
+	return false
 }
 
 func isSafeReport(report []int64) bool {
