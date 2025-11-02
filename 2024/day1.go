@@ -38,5 +38,16 @@ func main() {
 	for i := range xs {
 		totalDistance += int(math.Abs(float64(xs[i] - ys[i])))
 	}
-	fmt.Printf("%d\n", totalDistance)
+	fmt.Printf("part1: %d\n", totalDistance)
+
+	counts := make(map[int]int)
+	for _, v := range ys {
+		counts[v] += 1
+	}
+
+	similarityScore := 0
+	for _, v := range xs {
+		similarityScore += v * counts[v]
+	}
+	fmt.Printf("part2: %d\n", similarityScore)
 }
