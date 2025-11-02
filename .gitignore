@@ -3,3 +3,4 @@ a.out
 __pycache__/
 .ropeproject/
 .venv*/
+*.input
